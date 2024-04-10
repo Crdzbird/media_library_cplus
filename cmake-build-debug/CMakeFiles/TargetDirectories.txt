@@ -1,0 +1,3 @@
+/Users/crdzbird/CLionProjects/media_library/cmake-build-debug/CMakeFiles/media_library.dir
+/Users/crdzbird/CLionProjects/media_library/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/crdzbird/CLionProjects/media_library/cmake-build-debug/CMakeFiles/rebuild_cache.dir
