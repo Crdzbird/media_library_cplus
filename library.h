@@ -7,6 +7,7 @@ extern "C" {
 
 double getMediaDuration(const char* filePath);
 int isValidMediaFile(const char* filePath);
+int convertMediaFormat(const char* srcFilePath, const char* destDirPath, const char* outputFileName, const char* outputFormat);
 
 #ifdef __cplusplus
 }
