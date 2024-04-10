@@ -35,7 +35,8 @@ double getMediaDuration(const char* filePath) {
     MediaType type = getMediaType(formatContext);
     if (type == MediaType::Video) {
         duration = static_cast<double>(formatContext->duration) / AV_TIME_BASE;
-    } else if (type == MediaType::Audio) {
+    }
+    if (type == MediaType::Audio) {
         for (unsigned int i = 0; i < formatContext->nb_streams; ++i) {
             if (formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
                 duration = static_cast<double>(formatContext->duration) / AV_TIME_BASE;
