@@ -49,7 +49,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.2.sdk -fPIC -fcolor-diagnostics"
+					"fragment" : "-g -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -fPIC -fcolor-diagnostics"
 				}
 			],
 			"defines" : 
@@ -62,7 +62,7 @@
 			[
 				{
 					"backtrace" : 3,
-					"path" : "/opt/homebrew/Cellar/ffmpeg/7.0-with-options_1/include"
+					"path" : "/opt/homebrew/Cellar/ffmpeg/7.1/include"
 				}
 			],
 			"language" : "CXX",
@@ -91,7 +91,7 @@
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "-L/opt/homebrew/Cellar/ffmpeg/7.0-with-options_1/lib",
+				"fragment" : "-L/opt/homebrew/Cellar/ffmpeg/7.1/lib",
 				"role" : "libraryPath"
 			}
 		],

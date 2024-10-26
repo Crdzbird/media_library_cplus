@@ -9,7 +9,7 @@
 					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
 					"minimumCMakeVersion" : 
 					{
-						"string" : "3.28"
+						"string" : "3.5"
 					},
 					"projectIndex" : 0,
 					"source" : ".",
@@ -39,7 +39,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "media_library::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-media_library-Debug-8f5d3fcfbdedd4c93ec8.json",
+					"jsonFile" : "target-media_library-Debug-ce0d6edd05701f67e9c3.json",
 					"name" : "media_library",
 					"projectIndex" : 0
 				}
@@ -55,6 +55,6 @@
 	"version" : 
 	{
 		"major" : 2,
-		"minor" : 6
+		"minor" : 7
 	}
 }

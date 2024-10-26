@@ -1,4 +1,26 @@
 /Users/crdzbird/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Users/crdzbird/Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -G Ninja -S /Users/crdzbird/CLionProjects/media_library -B /Users/crdzbird/CLionProjects/media_library/cmake-build-debug
--- Configuring done (0.0s)
--- Generating done (0.0s)
--- Build files have been written to: /Users/crdzbird/CLionProjects/media_library/cmake-build-debug
+-- Found PkgConfig: /opt/homebrew/bin/pkg-config (found version "0.29.2")
+-- Checking for module 'libavformat'
+--   Found libavformat, version 61.7.100
+-- Checking for module 'libavcodec'
+--   Found libavcodec, version 61.19.100
+-- Checking for module 'libavutil'
+--   Found libavutil, version 59.39.100
+-- Checking for module 'libswscale'
+--   Found libswscale, version 8.3.100
+-- Configuring done (0.3s)
+CMake Error at CMakeLists.txt:20 (add_executable):
+  Cannot find source file:
+
+    your_source_files
+
+  Tried extensions .c .C .c++ .cc .cpp .cxx .cu .mpp .m .M .mm .ixx .cppm
+  .ccm .cxxm .c++m .h .hh .h++ .hm .hpp .hxx .in .txx .f .F .for .f77 .f90
+  .f95 .f03 .hip .ispc
+
+
+CMake Error at CMakeLists.txt:20 (add_executable):
+  No SOURCES given to target: your_executable
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.
