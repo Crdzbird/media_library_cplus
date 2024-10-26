@@ -8,7 +8,8 @@ extern "C" {
 double getMediaDuration(const char* filePath);
 int isValidMediaFile(const char* filePath);
 int convertMediaFormat(const char* srcFilePath, const char* destDirPath, const char* outputFileName, const char* outputFormat);
-int generateThumbnail(const char* filePath, const char* outputThumbnailPath, int width, int height);
+int generateThumbnail(const char* srcFilePath, const char* outputDirPath, const char* outputFileName, const char* outputFormat, int width, int height);
+char** generateThumbnails(const char* srcFilePath, const char* outputDirPath, int width, int height, int numThumbnails);
 
 #ifdef __cplusplus
 }

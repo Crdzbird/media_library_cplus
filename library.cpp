@@ -146,7 +146,7 @@ int convertMediaFormat(const char* srcFilePath, const char* destDirPath, const c
     return 1; // Successful conversion
 }
 
-int generateThumbnail(const char* srcFilePath, const char* thumbnailFilePath, int width, int height) {
+int generateThumbnail(const char* srcFilePath, const char* outputDirPath, const char* outputFileName, const char* outputFormat, int width, int height) {
     AVFormatContext* formatContext = nullptr;
     AVCodecContext* codecContext = nullptr;
     AVFrame* frame = nullptr;
@@ -170,7 +170,7 @@ int generateThumbnail(const char* srcFilePath, const char* thumbnailFilePath, in
     // Find the first video stream
     for (unsigned int i = 0; i < formatContext->nb_streams; ++i) {
         if (formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-            videoStreamIndex = i;
+            videoStreamIndex = int(i);
             break;
         }
     }
@@ -250,6 +250,10 @@ int generateThumbnail(const char* srcFilePath, const char* thumbnailFilePath, in
                     // Convert the image from its native format to RGB
                     sws_scale(swsContext, (uint8_t const* const*)frame->data, frame->linesize, 0, codecContext->height, frameRGB->data, frameRGB->linesize);
 
+                    // Construct thumbnail file path
+                    char thumbnailFilePath[1024];
+                    snprintf(thumbnailFilePath, sizeof(thumbnailFilePath), "%s/%s.%s", outputDirPath, outputFileName, outputFormat);
+
                     // Save the frame to a file
                     FILE* file = fopen(thumbnailFilePath, "wb");
                     if (file) {
@@ -276,4 +280,141 @@ int generateThumbnail(const char* srcFilePath, const char* thumbnailFilePath, in
     avformat_close_input(&formatContext);
 
     return ret;
+}
+
+char** generateThumbnails(const char* srcFilePath, const char* outputDirPath, int width, int height, int numThumbnails) {
+    char** thumbnails = new char*[numThumbnails];
+    AVFormatContext* formatContext = nullptr;
+    AVCodecContext* codecContext = nullptr;
+    AVFrame* frame = nullptr;
+    AVFrame* frameRGB = nullptr;
+    AVPacket packet;
+    struct SwsContext* swsContext = nullptr;
+    int videoStreamIndex = -1;
+
+    // Open input file
+    if (avformat_open_input(&formatContext, srcFilePath, nullptr, nullptr) != 0) {
+        return thumbnails; // Couldn't open file
+    }
+
+    // Retrieve stream information
+    if (avformat_find_stream_info(formatContext, nullptr) < 0) {
+        avformat_close_input(&formatContext);
+        return thumbnails; // Couldn't find stream information
+    }
+
+    // Find the first video stream
+    for (unsigned int i = 0; i < formatContext->nb_streams; ++i) {
+        if (formatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            videoStreamIndex = int(i);
+            break;
+        }
+    }
+    if (videoStreamIndex == -1) {
+        avformat_close_input(&formatContext);
+        return thumbnails; // Didn't find a video stream
+    }
+
+    // Get codec parameters and find decoder
+    AVCodecParameters* codecParameters = formatContext->streams[videoStreamIndex]->codecpar;
+    auto* codec = const_cast<AVCodec *>(avcodec_find_decoder(codecParameters->codec_id));
+    if (!codec) {
+        avformat_close_input(&formatContext);
+        return thumbnails; // Codec not found
+    }
+
+    // Allocate codec context
+    codecContext = avcodec_alloc_context3(codec);
+    if (!codecContext) {
+        avformat_close_input(&formatContext);
+        return thumbnails; // Could not allocate codec context
+    }
+
+    // Copy codec parameters to codec context
+    if (avcodec_parameters_to_context(codecContext, codecParameters) < 0) {
+        avcodec_free_context(&codecContext);
+        avformat_close_input(&formatContext);
+        return thumbnails; // Could not copy codec parameters
+    }
+
+    // Open codec
+    if (avcodec_open2(codecContext, codec, nullptr) < 0) {
+        avcodec_free_context(&codecContext);
+        avformat_close_input(&formatContext);
+        return thumbnails; // Could not open codec
+    }
+
+    // Allocate frames
+    frame = av_frame_alloc();
+    frameRGB = av_frame_alloc();
+    if (!frame || !frameRGB) {
+        avcodec_free_context(&codecContext);
+        avformat_close_input(&formatContext);
+        return thumbnails; // Could not allocate frame
+    }
+
+    // Allocate buffer for RGB frame
+    int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, width, height, 1);
+    auto* buffer = (uint8_t*)av_malloc(numBytes * sizeof(uint8_t));
+    if (!buffer) {
+        av_frame_free(&frame);
+        av_frame_free(&frameRGB);
+        avcodec_free_context(&codecContext);
+        avformat_close_input(&formatContext);
+        return thumbnails; // Could not allocate buffer
+    }
+
+    // Set up the frameRGB with the buffer
+    av_image_fill_arrays(frameRGB->data, frameRGB->linesize, buffer, AV_PIX_FMT_RGB24, width, height, 1);
+
+    // Initialize SWS context for software scaling
+    swsContext = sws_getContext(codecContext->width, codecContext->height, codecContext->pix_fmt, width, height, AV_PIX_FMT_RGB24, SWS_BILINEAR, nullptr, nullptr, nullptr);
+    if (!swsContext) {
+        av_free(buffer);
+        av_frame_free(&frame);
+        av_frame_free(&frameRGB);
+        avcodec_free_context(&codecContext);
+        avformat_close_input(&formatContext);
+        return thumbnails; // Could not initialize SWS context
+    }
+
+    // Read frames and save thumbnails
+    int frameCount = 0;
+    while (av_read_frame(formatContext, &packet) >= 0 && frameCount < numThumbnails) {
+        if (packet.stream_index == videoStreamIndex) {
+            if (avcodec_send_packet(codecContext, &packet) == 0) {
+                if (avcodec_receive_frame(codecContext, frame) == 0) {
+                    // Convert the image from its native format to RGB
+                    sws_scale(swsContext, (uint8_t const* const*)frame->data, frame->linesize, 0, codecContext->height, frameRGB->data, frameRGB->linesize);
+
+                    // Construct thumbnail file path
+                    char thumbnailFilePath[1024];
+                    snprintf(thumbnailFilePath, sizeof(thumbnailFilePath), "%s/thumbnail_%d.ppm", outputDirPath, frameCount);
+
+                    // Save the frame to a file
+                    FILE* file = fopen(thumbnailFilePath, "wb");
+                    if (file) {
+                        fprintf(file, "P6\n%d %d\n255\n", width, height);
+                        for (int y = 0; y < height; y++) {
+                            fwrite(frameRGB->data[0] + y * frameRGB->linesize[0], 1, width * 3, file);
+                        }
+                        fclose(file);
+                        thumbnails[frameCount] = thumbnailFilePath;
+                        frameCount++;
+                    }
+                }
+            }
+        }
+        av_packet_unref(&packet);
+    }
+
+    // Free resources
+    sws_freeContext(swsContext);
+    av_free(buffer);
+    av_frame_free(&frame);
+    av_frame_free(&frameRGB);
+    avcodec_free_context(&codecContext);
+    avformat_close_input(&formatContext);
+
+    return thumbnails;
 }
