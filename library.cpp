@@ -7,6 +7,7 @@ extern "C" {
 #include <libavutil/imgutils.h>
 #include <libavutil/avutil.h>
 #include <libavcodec/bsf.h>
+#include <jpeglib.h>
 }
 
 enum class MediaType {
@@ -146,6 +147,47 @@ int convertMediaFormat(const char* srcFilePath, const char* destDirPath, const c
     return 1; // Successful conversion
 }
 
+int saveAsJPEG(const char* filename, uint8_t* buffer, int width, int height, int stride) {
+    struct jpeg_compress_struct cinfo{};
+    struct jpeg_error_mgr jerr{};
+
+    // Open the output file
+    FILE* outfile = fopen(filename, "wb");
+    if (!outfile) {
+        fprintf(stderr, "Error: Could not open output file %s\n", filename);
+        return -1;
+    }
+
+    // Initialize the JPEG compression object
+    cinfo.err = jpeg_std_error(&jerr);
+    jpeg_create_compress(&cinfo);
+    jpeg_stdio_dest(&cinfo, outfile);
+
+    // Set the image parameters
+    cinfo.image_width = width;
+    cinfo.image_height = height;
+    cinfo.input_components = 3; // RGB
+    cinfo.in_color_space = JCS_RGB;
+    jpeg_set_defaults(&cinfo);
+    jpeg_set_quality(&cinfo, 85, TRUE); // Quality (0-100)
+
+    // Start compression
+    jpeg_start_compress(&cinfo, TRUE);
+
+    // Write each row of the image
+    while (cinfo.next_scanline < cinfo.image_height) {
+        JSAMPROW row_pointer[1] = {buffer + cinfo.next_scanline * stride};
+        jpeg_write_scanlines(&cinfo, row_pointer, 1);
+    }
+
+    // Finish compression
+    jpeg_finish_compress(&cinfo);
+    fclose(outfile);
+    jpeg_destroy_compress(&cinfo);
+
+    return 0; // Success
+}
+
 int generateThumbnail(const char* srcFilePath, const char* outputDirPath, const char* outputFileName, const char* outputFormat, int width, int height) {
     AVFormatContext* formatContext = nullptr;
     AVCodecContext* codecContext = nullptr;
@@ -254,15 +296,11 @@ int generateThumbnail(const char* srcFilePath, const char* outputDirPath, const 
                     char thumbnailFilePath[1024];
                     snprintf(thumbnailFilePath, sizeof(thumbnailFilePath), "%s/%s.%s", outputDirPath, outputFileName, outputFormat);
 
-                    // Save the frame to a file
-                    FILE* file = fopen(thumbnailFilePath, "wb");
-                    if (file) {
-                        fprintf(file, "P6\n%d %d\n255\n", width, height);
-                        for (int y = 0; y < height; y++) {
-                            fwrite(frameRGB->data[0] + y * frameRGB->linesize[0], 1, width * 3, file);
+                    // Save as JPEG
+                    if (strcmp(outputFormat, "jpeg") == 0 || strcmp(outputFormat, "jpg") == 0) {
+                        if (saveAsJPEG(thumbnailFilePath, frameRGB->data[0], width, height, frameRGB->linesize[0]) == 0) {
+                            ret = 1; // Success
                         }
-                        fclose(file);
-                        ret = 1; // Success
                     }
                     break;
                 }
@@ -418,3 +456,5 @@ char** generateThumbnails(const char* srcFilePath, const char* outputDirPath, in
 
     return thumbnails;
 }
+
+

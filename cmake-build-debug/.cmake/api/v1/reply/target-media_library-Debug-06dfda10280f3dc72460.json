@@ -26,13 +26,25 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 11,
+				"line" : 23,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
 				"line" : 9,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 10,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 6,
 				"parent" : 0
 			},
 			{
@@ -49,7 +61,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -fPIC -fcolor-diagnostics"
+					"fragment" : "-g -std=gnu++17 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.1.sdk -fPIC -fcolor-diagnostics"
 				}
 			],
 			"defines" : 
@@ -61,8 +73,12 @@
 			"includes" : 
 			[
 				{
-					"backtrace" : 3,
-					"path" : "/opt/homebrew/Cellar/ffmpeg/7.1/include"
+					"backtrace" : 4,
+					"path" : "/opt/homebrew/Cellar/ffmpeg/7.1_3/include"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/opt/homebrew/Cellar/jpeg-turbo/3.0.4/include"
 				}
 			],
 			"language" : "CXX",
@@ -91,7 +107,12 @@
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "-L/opt/homebrew/Cellar/ffmpeg/7.1/lib",
+				"fragment" : "-L/opt/homebrew/Cellar/ffmpeg/7.1_3/lib",
+				"role" : "libraryPath"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "-L/opt/homebrew/Cellar/jpeg-turbo/3.0.4/lib",
 				"role" : "libraryPath"
 			}
 		],
